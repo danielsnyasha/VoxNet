@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 Voxnet is a real-time, team communication platform designed for seamless collaboration, similar to popular services like Discord. Whether you're organizing a project, hosting a community, or staying connected with friends, Voxnet enables users to create channels, host video and audio calls, and engage in live text chats. Built to provide a dynamic user experience, Voxnet emphasizes real-time interaction through the use of cutting-edge technologies like WebSockets and webhooks for instant message delivery and notifications.
 
 Key features include:
