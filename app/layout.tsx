@@ -19,17 +19,17 @@ export default function RootLayout({
 }) {
   return (
     <ClerkProvider>
-      <html lang="en" suppressHydrationWarning>
+      <html lang="en" className="dark" suppressHydrationWarning> {/* Force dark mode here */}
         <body className={cn(
           inter.className,
-          "bg-white dark:bg-[#313338]"
+          "bg-white dark:bg-[#313338]"  // Ensure dark background is set
         )}>
           <ThemeProvider
             attribute="class"
-            defaultTheme="dark"
-            enableSystem={false}
+            defaultTheme="dark"  // Set dark mode as default
+            enableSystem={true}  // Disable system theme detection to keep it in dark mode
             disableTransitionOnChange
-            storageKey="VoxNet-Theme"
+            storageKey="VoxNet-Theme"  // Custom storage key
           >
             {children}
           </ThemeProvider>
