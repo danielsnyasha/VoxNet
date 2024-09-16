@@ -58,9 +58,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
         }}
       />
       {/* Additional UI for when no file is uploaded */}
-      <p>File Upload Component</p>
-      <p>Current Value: {value}</p>
-      <p>Upload Endpoint: {endpoint}</p>
+      
     </div>
   );
 };

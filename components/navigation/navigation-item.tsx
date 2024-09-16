@@ -23,10 +23,16 @@ export const NavigationItem = ({
         <ActionTooltip side="right" align='center' label={name}>
             <button onClick={() => {}} className="group relative flex items-center">
                 {/* Left colored bar */}
-                <div className={cn(
-                    "absolute left-0 bg-primary rounded-r-full transition-all w-[4px]",
-                    isActive ? "h-full" : "h-0"
-                )}></div>
+                <div
+                    className={cn(
+                        "absolute left-0 bg-primary rounded-r-full transition-all duration-300 ease-in-out w-[4px]",
+                        isActive ? "h-[48px]" : "h-0"
+                    )}
+                    style={{
+                        // Adjust the position of the white bar
+                        transform: isActive ? 'translateY(0)' : 'translateY(100%)',
+                    }}
+                ></div>
 
                 {/* Image Container */}
                 <div className={cn(
