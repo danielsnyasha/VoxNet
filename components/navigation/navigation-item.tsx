@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { ActionTooltip } from "../action-tooltip";
+import { useRouter } from "next/navigation";
 
 interface NavigationItemProps {
     id: string;
@@ -12,16 +13,21 @@ interface NavigationItemProps {
 };
 
 export const NavigationItem = ({
+
     id,
     imageUrl,
     name
 }: NavigationItemProps) => {
     const params = useParams();
     const isActive = params?.serverId === id;
+    const router = useRouter()
 
     return (
         <ActionTooltip side="right" align='center' label={name}>
-            <button onClick={() => {}} className="group relative flex items-center">
+            <button 
+                onClick={() => router.push(`/servers/${id}`)} // Navigate to the selected server
+                className="group relative flex items-center"
+            >
                 {/* Left colored bar */}
                 <div
                     className={cn(

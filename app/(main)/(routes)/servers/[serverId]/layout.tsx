@@ -6,42 +6,50 @@ import { redirect } from "next/navigation";
 import React from "react";
 
 const ServerIdLayout = async ({
-    children, params,
+  children,
+  params,
 }: {
-    children: React.ReactNode;
-    params: { serverId: string };
+  children: React.ReactNode;
+  params: { serverId: string };
 }) => {
-    const profile = await currentProfile();
+  // Fetch the current profile
+  const profile = await currentProfile();
 
-    if (!profile) {
-        return redirectToSignIn();
-    }
+  // Redirect to sign-in if no profile is found
+  if (!profile) {
+    return redirectToSignIn();
+  }
 
-    const server = await db.server.findUnique({
-        where: {
-            id: params.serverId,
-            members: {
-                some: {
-                    profileId: profile.id
-                }
-            }
-        }
-    });
+  // Find the server and check if the current profile is a member
+  const server = await db.server.findFirst({
+    where: {
+      id: params.serverId,
+      members: {
+        some: {
+          profileId: profile.id,
+        },
+      },
+    },
+  });
 
-    if (!server) {
-        return redirect('/');
-    }
+  // If no server found, redirect to the home page
+  if (!server) {
+    return redirect('/');
+  }
 
-    return (
-        <div className="h-full">
-            {/* Sidebar */}
-            <div className=" md:flex md:w-60 bg-gray-800 z-20 flex-col fixed inset-y-0 pl-4">
-                <ServerSidebar />
-            </div>
-            {/* Main Content */}
-            <main className="h-full flex flex-col">{children}</main>
-        </div>
-    );
+  return (
+    <div className="h-full flex">
+      {/* Server Sidebar */}
+      <div className="md:flex md:w-60 bg-gray-800 z-20 flex-col fixed inset-y-0  md:pl-0">
+        <ServerSidebar serverId={params.serverId} />
+      </div>
+
+      {/* Main Content Area */}
+      <main className="flex-1 md:pl-60 pl-20 overflow-y-auto">
+        {children}
+      </main>
+    </div>
+  );
 };
 
 export default ServerIdLayout;
