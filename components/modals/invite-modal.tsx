@@ -15,7 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useRouter } from 'next/navigation';
 import { useModal } from '@/hooks/use-modal-store';
-import { Label } from '@radix-ui/react-dropdown-menu';
+import { Label } from '../ui/label';
 import { Input } from '../ui/input';
 import { Check, Copy, RefreshCcw } from 'lucide-react';
 import { useOrigin } from '@/hooks/use-origin';
@@ -25,7 +25,7 @@ export const InviteModal = () => {
     const { onOpen, isOpen, onClose, type, data } = useModal();
     const router = useRouter();
 
-    const { server } = data;
+    const server = data?.server;
 
     const isModalOpen = isOpen && type === 'invite';
 
