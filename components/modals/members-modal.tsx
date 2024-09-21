@@ -11,33 +11,101 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+    DropdownMenuSub,
+    DropdownMenuSubContent,
+    DropdownMenuSubTrigger,
+    DropdownMenuPortal
+
+} from "@/components/ui/dropdown-menu";
+
 
 import { Button } from "@/components/ui/button";
 import { useRouter } from 'next/navigation';
 import { useModal } from '@/hooks/use-modal-store';
 import { Label } from '@radix-ui/react-dropdown-menu';
 
+import qs from 'query-string';
+
 
 import { useState } from 'react';
 import { ServerWithMembersWithProfiles } from '@/types';
 import { ScrollArea } from '../ui/scroll-area';
 import { UserAvatar } from '../user-avatar';
-import { ShieldAlert, ShieldCheck } from 'lucide-react';
+import { Check, Gavel, Loader2, MoreVertical, Shield, ShieldAlert, ShieldCheck, ShieldQuestion } from 'lucide-react';
+
+import { MemberRole } from '@prisma/client';
+
 
 const roleIconMap = {
-    "GUEST" : null,
-    "MODERATOR" : <ShieldCheck className='h-4 w-4 ml-2 text-indigo-500'/>,
-    "ADMIN" : <ShieldAlert className='h-4 w-4 text-rose-500'/>
+    "GUEST": null,
+    "MODERATOR": <ShieldCheck className='h-4 w-4 ml-2 text-indigo-500' />,
+    "ADMIN": <ShieldAlert className='h-4 w-4 text-rose-500' />
 }
 
 export const MembersModal = () => {
     const { onOpen, isOpen, onClose, type, data } = useModal();
-    const [loadingId, setLoadingId] = useState(' ');
+    const [loadingId, setLoadingId] = useState<string | null>(null); // Set default to null
     const router = useRouter();
 
-    const {server} = data as {server: ServerWithMembersWithProfiles}
+    const server = data?.server as ServerWithMembersWithProfiles;
+
+    // Early return if data or server is missing
+    if (!server) {
+        return null; // Optionally, you can return a loading spinner here instead
+    }
+
 
     const isModalOpen = isOpen && type === 'members';
+
+    const onKick = async (memberId: string) => {
+        try {
+            setLoadingId(memberId);
+            const url = qs.stringifyUrl({
+                url: `/api/members/${memberId}`,
+                query: {
+                    serverId: server?.id,
+                },
+            });
+
+            const response = await axios.delete(url);
+            router.refresh();
+            onOpen("members", {server: response.data})
+        } catch (error){
+            console.log(error);
+        } finally {
+            setLoadingId("");
+        }
+    
+    }
+    
+
+    const onRoleChange = async (memberId: string, role: MemberRole) => {
+        try {
+            setLoadingId(memberId); // Show loader for the specific member
+            const url = qs.stringifyUrl({
+                url: `/api/members/${memberId}`,
+                query: {
+                    serverId: server?.id,
+                }
+            });
+
+            const response = await axios.patch(url, { role });
+            router.refresh();
+            onOpen("members", { server: response.data });
+
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setLoadingId(null); // Ensure loadingId is reset to null after completion
+        }
+    }
 
     return (
         <Dialog open={isModalOpen} onOpenChange={onClose}>
@@ -47,36 +115,76 @@ export const MembersModal = () => {
                         Manage Members
                     </DialogTitle>
                     <DialogDescription className='text-center text-zinc-500'>
-                    {server?.members?.length} Members
-
-                </DialogDescription>
+                        {server?.members?.length} Members
+                    </DialogDescription>
                 </DialogHeader>
                 <ScrollArea className='mt-8 max-h-[420px] pr-6'>
-    {server?.members?.map((member) => {
-        console.log(member); // Add this line to debug
-        return (
-            <div key={member.id} className='flex items-center gap-x-2 mb-6'>
-                <UserAvatar src={member.profile.imageUrl} className='bg-gray-300'/>
-                <div className='flex flex-col gap-y-1'>
-                    <div className='text-xs font-semibold flex items-center gap-x-1'>
-                        {member.profile.name}
-                        {roleIconMap[member.role]}
+                    {server?.members?.map((member) => {
+                        return (
+                            <div key={member.id} className='flex items-center gap-x-2 mb-6'>
+                                <UserAvatar
+                                    src={member.profile.imageUrl}
+                                    className="bg-gray-300 rounded-full border-2 border-gray-400 shadow-md hover:shadow-lg transition-shadow duration-300 ease-in-out transform hover:scale-105"
+                                />
 
-                    </div>
-                    <p className='text-xs text-zinc-500'>
-                        {member.profile.email}
-                    </p>
-                </div>
-            </div>
-        );
-    })}
-</ScrollArea>
+                                <div className='flex flex-col gap-y-1'>
+                                    <div className='text-xs font-semibold flex items-center gap-x-1'>
+                                        {member.profile.name}
+                                        {roleIconMap[member.role]}
+                                    </div>
+                                    <p className='text-xs text-zinc-500'>
+                                        {member.profile.email}
+                                    </p>
+                                </div>
+                                {server.profileId !== member.profileId && (
+                                    <div className='ml-auto'>
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger>
+                                                <MoreVertical className='h-4 w-4 text-zinc-500' />
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent>
+                                                <DropdownMenuSub>
+                                                    <DropdownMenuSubTrigger className='flex items-center'>
+                                                        <ShieldQuestion />
+                                                        <span>Role</span>
+                                                    </DropdownMenuSubTrigger>
+                                                    <DropdownMenuPortal>
+                                                        <DropdownMenuSubContent>
+                                                            <DropdownMenuItem onClick={() => onRoleChange(member.id, "GUEST")}>
+                                                                <Shield className='h-4 w-4 mr-2' />
+                                                                Guest
+                                                                {member.role === "GUEST" && (
+                                                                    <Check className='h-4 w-4 ml-auto text-green-500' />
+                                                                )}
+                                                            </DropdownMenuItem>
 
-                
-                <div>
-                   
-                
-                </div>
+                                                            <DropdownMenuItem onClick={() => onRoleChange(member.id, "MODERATOR")}>
+                                                                <ShieldCheck className='h-4 w-4 mr-2' />
+                                                                Moderator
+                                                                {member.role === 'MODERATOR' && (
+                                                                    <Check className='h-4 w-4 ml-auto text-yellow-500' />
+                                                                )}
+                                                            </DropdownMenuItem>
+                                                        </DropdownMenuSubContent>
+                                                    </DropdownMenuPortal>
+                                                </DropdownMenuSub>
+
+                                                <DropdownMenuSeparator />
+                                                <DropdownMenuItem onClick={() => onKick(member.id)}>
+                                                    <Gavel className='h-4 w-4 mr-2' />
+                                                    Kick
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </div>
+                                )}
+                                {loadingId === member.id && (
+                                    <Loader2 className='animate-spin text-zinc-500 ml-auto' />
+                                )}
+                            </div>
+                        );
+                    })}
+                </ScrollArea>
             </DialogContent>
         </Dialog>
     );
