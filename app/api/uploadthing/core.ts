@@ -17,17 +17,16 @@ export const ourFileRouter = {
         .middleware(() => {
             return handleAuth();  // Return the result of handleAuth, which includes the userId
         })
-        .onUploadComplete(({ metadata, file }) => {
+        .onUploadComplete(() => {
             // Handle the uploaded file completion, possibly using userId from middleware
-            console.log(`File upload complete for user: ${metadata.userId}`);
+         
         }),
     
-    messageFile: f({ image: { maxFileSize: '2MB', maxFileCount: 5 } })  // Additional file route for 'messageFile'
-        .middleware(() => {
-            return handleAuth();  // Reuse the same authentication logic
-        })
-        .onUploadComplete(({ metadata, file }) => {
-            console.log(`File upload complete for message: ${metadata.userId}`);
+    messageFile: f(["image", "pdf"])  // Additional file route for 'messageFile'
+        .middleware(() => handleAuth() // Reuse the same authentication logic
+    )
+        .onUploadComplete(() => {
+           
         })
 } satisfies FileRouter;
  

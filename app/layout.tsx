@@ -7,6 +7,8 @@ import { cn } from "@/lib/utils";
 import { ModalProvider } from "@/components/providers/modal-provider";
 import { ToastContainer } from "react-toastify"; // Import ToastContainer
 import 'react-toastify/dist/ReactToastify.css'; // Import the CSS for Toastify
+import { SocketProvider } from "@/components/providers/socket.provider";
+import QueryProvider from "@/components/providers/query-provider";
 
 const inter = Recursive({ subsets: ["latin"] });
 
@@ -36,9 +38,14 @@ export default function RootLayout({
             disableTransitionOnChange
             storageKey="VoxNet-Theme"  // Custom storage key
           >
-            <ModalProvider />
-            {children}
+            <SocketProvider>
+              <ModalProvider />
+              <QueryProvider>
+              {children}
+              </QueryProvider>
+            </SocketProvider>
           </ThemeProvider>
+
           <ToastContainer // Add ToastContainer here to enable toasts globally
             position="top-center"
             autoClose={3000}
