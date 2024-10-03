@@ -15,6 +15,7 @@ const ChatWelcome = ({
         {type === "channel" && (
             <div className='h-[75px] w-[75px] rounded-full bg-zinc-500 dark:bg-zinc-700 flex items-center justify-center'>
                 <Hash className='h-12 w-12 text-white'/>
+                
             </div>
         )}
 

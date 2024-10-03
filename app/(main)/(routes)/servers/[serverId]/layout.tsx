@@ -45,9 +45,10 @@ const ServerIdLayout = async ({
       </div>
 
       {/* Main Content Area */}
-      <main className="flex-1 sm:pl-20 md:pl-60 -y-auto">
+      <main className="flex-1 flex sm:pl-20 md:pl-60 flex-col overflow-y-auto h-full ">
         {children}
       </main>
+
     </div>
   );
 };

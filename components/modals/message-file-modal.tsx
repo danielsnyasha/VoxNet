@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 
 import { toast } from 'react-toastify'; // Toast notifications
+import { Plane } from 'lucide-react'; // Importing the send icon
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -35,7 +36,7 @@ export const MessageFileModal = () => {
   const router = useRouter();
 
   const isModalOpen = isOpen && type === "messageFile";
-  const { apiUrl, query } = data ; // Fallback if `data` is undefined
+  const { apiUrl, query } = data || {}; // Fallback if `data` is undefined
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -109,9 +110,9 @@ export const MessageFileModal = () => {
                 />
               </div>
             </div>
-            <DialogFooter className="bg-gray-100 px-6 py-4">
-              <Button disabled={isLoading} variant="primary">
-                Send
+            <DialogFooter className="bg-gray-100 px-6 py-4 flex justify-center">
+              <Button disabled={isLoading} variant="primary" className="flex items-center justify-center p-2">
+                <Plane className="w-5 h-5" /> {/* Only icon, no text */}
               </Button>
             </DialogFooter>
           </form>

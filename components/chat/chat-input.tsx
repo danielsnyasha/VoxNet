@@ -4,7 +4,6 @@ import * as z from "zod";
 import axios from "axios";
 import qs from "query-string";
 
-import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -17,7 +16,7 @@ import { Input } from "@/components/ui/input";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, Smile } from "lucide-react";
+import { Plus, Smile, Send } from "lucide-react"; // Added Send icon
 import { useModal } from "@/hooks/use-modal-store";
 import EmojiPicker from "../emoji-picker";
 import { useRouter } from "next/navigation";
@@ -84,25 +83,32 @@ const ChatInput = ({ apiUrl, query, name, type }: ChatInputProps) => {
                   <Input
                     disabled={isLoading}
                     className="px-14 py-6 bg-zinc-200/90 dark:bg-zinc-700/75 border-none focus-visible:ring-0 text-zinc-600 dark:text-zinc-200"
-                    placeholder={`Message ${type === "conversation" ? name : "#" + name}`}
+                    placeholder={`Message ${
+                      type === "conversation" ? name : "#" + name
+                    }`}
                     {...field}
                   />
-                  <div className="absolute top-7 right-8">
+                  <div className="absolute top-7 right-14">
                     <EmojiPicker
                       onChange={(emoji: string) =>
                         field.onChange(`${field.value}${emoji}`) // Append emoji to the current value
                       }
                     />
                   </div>
+                  {/* Send icon button */}
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="absolute top-7 right-8 h-[24px] w-[24px] bg-zinc-500 dark:bg-zinc-400 hover:bg-zinc-600 dark:hover:bg-zinc-300 transition rounded-full p-1 ml-2 flex items-center justify-center"
+                  >
+                    <Send className="text-white dark:text-[#313338]" />
+                  </button>
                 </div>
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button type="submit" disabled={isLoading}>
-          Send
-        </Button>
       </form>
     </Form>
   );

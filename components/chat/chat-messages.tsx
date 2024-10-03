@@ -1,21 +1,21 @@
 "use client";
 
-import React, { Fragment } from 'react';
+import React, { Fragment, useEffect, useRef, ElementRef } from 'react';
 import { Member, Message, Profile } from '@prisma/client';
 import ChatWelcome from './chat-welcome';
 import { useChatQuery } from '@/hooks/use-chat-query';
 import { Loader2, ServerCrash } from 'lucide-react';
 import ChatItem from './chat-item';
-
-import {format} from 'date-fns'
+import { format } from 'date-fns';
+import { useChatSocket } from '@/hooks/use-chat-socket';
 
 type MessageWithMemberWithProfile = Message & {
     member: Member & {
-        profile: Profile
-    }
-}
+        profile: Profile;
+    };
+};
 
-const DATE_FORMAT = "dd MM yyyy, HH:mm";
+const DATE_FORMAT = "d MMM yyyy, HH:mm";
 
 interface ChatMessageProps {
     name: string;
@@ -41,6 +41,11 @@ const ChatMessages: React.FC<ChatMessageProps> = ({
     type,
 }) => {
     const queryKey = `chat:${chatId}`;
+    const addKey = `chat:${chatId}`;
+    const updateKey = `chat:${chatId}:messages:update`;
+
+    const chatRef = useRef<ElementRef<"div">>(null);
+    const bottomRef = useRef<ElementRef<"div">>(null);
 
     const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } = useChatQuery({
         queryKey,
@@ -48,6 +53,15 @@ const ChatMessages: React.FC<ChatMessageProps> = ({
         paramKey,
         paramValue,
     });
+
+    useChatSocket({ queryKey, addKey, updateKey });
+
+    // Scroll to the bottom when new messages are added
+    useEffect(() => {
+        if (bottomRef.current) {
+            bottomRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [data]);
 
     // Handling loading state
     if (status === "pending") {
@@ -71,22 +85,36 @@ const ChatMessages: React.FC<ChatMessageProps> = ({
 
     // Rendering chat messages
     return (
-        <div className='flex-1 flex flex-col py-4 overflow-y-auto'>
-            <div className='flex-1'>
-                <ChatWelcome type={type} name={name} />
-                <div className='flex flex-col-reverse mt-auto'>
-                    {
-                        data?.pages?.map((group, i) => (
+        <div className='flex-1 flex flex-col overflow-hidden'>
+            {/* Messages Container */}
+            <div ref={chatRef} className='flex-1 overflow-y-auto'>
+                <div className='flex-1'>
+                    <ChatWelcome type={type} name={name} />
+                    <div className='flex flex-col-reverse mt-auto'>
+                        {data?.pages?.map((group, i) => (
                             <Fragment key={i}>
                                 {group.items.map((message: MessageWithMemberWithProfile) => (
-                                    <ChatItem key={message.id} id={message.id} member={message.member} currentMember={member} content={message.content} fileUrl={message.fileUrl} deleted={message.deleted} timestamp={format(new Date(message.createdAt), DATE_FORMAT)} isUpdated={message.updatedAt !== message.createdAt} socketUrl={socketUrl} socketQuery={socketQuery} />
+                                    <ChatItem
+                                        key={message.id}
+                                        id={message.id}
+                                        member={message.member}
+                                        currentMember={member}
+                                        content={message.content}
+                                        fileUrl={message.fileUrl}
+                                        deleted={message.deleted}
+                                        timestamp={format(new Date(message.createdAt), DATE_FORMAT)}
+                                        isUpdated={message.updatedAt !== message.createdAt}
+                                        socketUrl={socketUrl}
+                                        socketQuery={socketQuery}
+                                    />
                                 ))}
                             </Fragment>
-                        ))
-                    }
+                        ))}
+                        {/* Bottom Reference for scrolling */}
+                        <div ref={bottomRef} />
+                    </div>
                 </div>
             </div>
-            {/* Add loader or pagination logic here */}
         </div>
     );
 };

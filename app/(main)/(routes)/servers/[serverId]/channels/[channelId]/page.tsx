@@ -8,50 +8,74 @@ import { redirect } from 'next/navigation';
 import React from 'react';
 
 interface ChannelIdPageProps {
-    params: {
-        serverId: string;
-        channelId: string;
-    }
+  params: {
+    serverId: string;
+    channelId: string;
+  };
 }
 
 const ChannelIdPage = async ({ params }: ChannelIdPageProps) => {
-    const profile = await currentProfile();
+  const profile = await currentProfile();
 
-    if (!profile) {
-        return auth().redirectToSignIn(); // Updated to the new recommended function
-    }
+  if (!profile) {
+    return auth().redirectToSignIn();
+  }
 
-    const channel = await db.channel.findFirst({
-        where: {
-            id: params.channelId, // Ensure you're getting the channel by its ID
-            serverId: params.serverId,
-        },
-    });
+  const channel = await db.channel.findFirst({
+    where: {
+      id: params.channelId,
+      serverId: params.serverId,
+    },
+  });
 
-    const member = await db.member.findFirst({
-        where: {
-            serverId: params.serverId,
-            profileId: profile.id,
-        }
-    });
+  const member = await db.member.findFirst({
+    where: {
+      serverId: params.serverId,
+      profileId: profile.id,
+    },
+  });
 
-    if (!channel || !member) {
-        return redirect('/');
-    }
+  if (!channel || !member) {
+    return redirect('/');
+  }
 
-    return (
-        <div className="bg-white dark:bg-[#313338] flex flex-col h-full">
-            <ChatHeader name={channel.name} serverId={channel.serverId} type="channel" />
-            <ChatMessages member={member} name={channel.name} chatId={channel.id} type="channel" apiUrl='/api/messages' socketUrl="/api/socket/messages" socketQuery={{
-                channelId: channel.id, serverId: channel.serverId,
-            }} paramKey='channelId' paramValue={channel.id}/>
-            <div className='flex-1'></div>
-            <ChatInput name={channel.name} type="channel" apiUrl='/api/socket/messages' query={{
-                channelId: channel.id,
-                serverId: channel.serverId,
-            }}/>
-        </div>
-    );
+  return (
+    <div className="bg-white dark:bg-[#313338] flex flex-col h-full">
+      {/* Header */}
+      <ChatHeader name={channel.name} serverId={channel.serverId} type="channel" />
+
+      {/* Chat Messages */}
+      <div className="flex-1 overflow-y-auto relative">
+        <ChatMessages
+          member={member}
+          name={channel.name}
+          chatId={channel.id}
+          type="channel"
+          apiUrl='/api/messages'
+          socketUrl="/api/socket/messages"
+          socketQuery={{
+            channelId: channel.id,
+            serverId: channel.serverId,
+          }}
+          paramKey='channelId'
+          paramValue={channel.id}
+        />
+      </div>
+
+      {/* Chat Input at the Bottom */}
+      <div className="border-t border-gray-200 dark:border-gray-700">
+        <ChatInput
+          name={channel.name}
+          type="channel"
+          apiUrl='/api/socket/messages'
+          query={{
+            channelId: channel.id,
+            serverId: channel.serverId,
+          }}
+        />
+      </div>
+    </div>
+  );
 }
 
 export default ChannelIdPage;
